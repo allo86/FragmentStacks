@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Fragment Stacks</string>
+
+    <string name="fragment_instructions">This is a fragment that generates a random number.</string>
+
+    <string name="button_generate_random">Generate random number</string>
+
+    <string name="button_new_fragment">Add new fragment</string>
+</resources>
