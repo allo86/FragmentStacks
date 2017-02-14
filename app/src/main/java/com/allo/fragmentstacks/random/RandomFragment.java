@@ -7,7 +7,9 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.allo.fragmentstacks.R;
 
@@ -53,11 +55,28 @@ public class RandomFragment extends Fragment {
         return new RandomFragment();
     }
 
+    public static RandomFragment newInstance(int randomNumber,
+                                             boolean retainInstanceState) {
+        RandomFragment fragment = new RandomFragment();
+        Bundle args = new Bundle();
+        args.putInt(GENERATED_NUMBER, randomNumber);
+        args.putBoolean(RETAIN_INSTANCE_STATE, retainInstanceState);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
     private TextView tvGeneratedNumber;
+    private CheckBox cbPassRandom;
+    private CheckBox cbAddtoBackStack;
+    private CheckBox cbRetainInstanceState;
 
     private int mGeneratedNumber;
+    private boolean mRetainInstanceState;
 
     private static final String GENERATED_NUMBER = "GENERATED_NUMBER";
+    private static final String RETAIN_INSTANCE_STATE = "RETAIN_INSTANCE_STATE";
+    private static final String ARGS_LOADED = "ARGS_LOADED";
+    private boolean mArgsLoaded;
 
     @Override
     public void onAttach(Context context) {
@@ -93,6 +112,14 @@ public class RandomFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_random, container, false);
 
         initializeUI(view);
+
+        Bundle args = getArguments();
+        if (args != null && !mArgsLoaded) {
+            initializeDataFromArguments(args);
+            mArgsLoaded = true;
+        }
+
+        setRetainInstance(mRetainInstanceState);
 
         return view;
     }
@@ -168,16 +195,16 @@ public class RandomFragment extends Fragment {
         Log.d(TAG_LOG, "onSaveInstanceState");
 
         outState.putInt(GENERATED_NUMBER, mGeneratedNumber);
+        outState.putBoolean(ARGS_LOADED, mArgsLoaded);
 
         super.onSaveInstanceState(outState);
     }
 
-    protected void initializeDataFromSavedState(Bundle savedInstanceState) {
-        mGeneratedNumber = savedInstanceState.getInt(GENERATED_NUMBER, 0);
-    }
-
     protected void initializeUI(View view) {
         tvGeneratedNumber = (TextView) view.findViewById(R.id.tv_generated_number);
+        cbPassRandom = (CheckBox) view.findViewById(R.id.cb_pass_random);
+        cbAddtoBackStack = (CheckBox) view.findViewById(R.id.cb_add_to_backstack);
+        cbRetainInstanceState = (CheckBox) view.findViewById(R.id.cb_retain_instance_state);
 
         view.findViewById(R.id.bt_generate_random).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -195,6 +222,15 @@ public class RandomFragment extends Fragment {
         });
     }
 
+    protected void initializeDataFromArguments(Bundle args) {
+        mGeneratedNumber = args.getInt(GENERATED_NUMBER, 0);
+        mRetainInstanceState = args.getBoolean(RETAIN_INSTANCE_STATE, false);
+    }
+
+    protected void initializeDataFromSavedState(Bundle savedInstanceState) {
+        mGeneratedNumber = savedInstanceState.getInt(GENERATED_NUMBER, 0);
+    }
+
     protected void showData() {
         if (mGeneratedNumber != 0) tvGeneratedNumber.setText(String.valueOf(mGeneratedNumber));
     }
@@ -204,7 +240,16 @@ public class RandomFragment extends Fragment {
     }
 
     private void addNewFragment() {
-        Fragment fragment = RandomFragment.newInstance();
-        if (mListener != null) mListener.performFragmentTransaction(fragment, true);
+        if (mGeneratedNumber == 0) {
+            Toast.makeText(getActivity(),
+                    getString(R.string.error_generate_number),
+                    Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Fragment fragment = RandomFragment.newInstance(cbPassRandom.isChecked() ? mGeneratedNumber : 0,
+                cbRetainInstanceState.isChecked());
+        if (mListener != null)
+            mListener.performFragmentTransaction(fragment, cbAddtoBackStack.isChecked());
     }
 }

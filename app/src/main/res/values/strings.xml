@@ -2,8 +2,10 @@
     <string name="app_name">Fragment Stacks</string>
 
     <string name="fragment_instructions">This is a fragment that generates a random number.</string>
-
     <string name="button_generate_random">Generate random number</string>
-
     <string name="button_new_fragment">Add new fragment</string>
+    <string name="pass_random_number_as_argument">Pass generated number as argument to new fragment</string>
+    <string name="add_to_backstack">Old fragment is added to backstack</string>
+    <string name="retain_instance_state">New fragment retains instance state</string>
+    <string name="error_generate_number">Please generate a number</string>
 </resources>
